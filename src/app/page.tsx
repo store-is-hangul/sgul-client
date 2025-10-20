@@ -1,103 +1,59 @@
-import Image from "next/image";
+"use client";
 
+import { SocketStatus } from "@/components/socket-status";
+import { SocketExample } from "@/components/socket-example";
+
+/**
+ * 메인 홈 페이지 컴포넌트
+ *
+ * WebSocket 기능을 시연하는 데모 페이지로 다음을 포함:
+ * - WebSocket 연결 상태 표시 및 제어
+ * - 실시간 메시지 송수신 예제
+ * - 방(Room) 기반 통신 예제
+ * - 사용 방법 안내
+ */
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <div className="mx-auto max-w-4xl space-y-8">
+        {/* 페이지 헤더 */}
+        <header className="text-center">
+          <h1 className="mb-2 text-4xl font-bold text-gray-900">
+            WebSocket Demo
+          </h1>
+          <p className="text-gray-600">Socket.IO를 사용한 실시간 통신 예제</p>
+        </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        {/* WebSocket 연결 상태 표시 */}
+        <SocketStatus />
+
+        {/* WebSocket 기능 예제 */}
+        <SocketExample />
+
+        {/* 사용 방법 안내 */}
+        <footer className="rounded-lg bg-white p-6 shadow-sm">
+          <h3 className="mb-3 text-lg font-semibold">사용 방법</h3>
+          <ol className="list-inside list-decimal space-y-2 text-sm text-gray-700">
+            <li>
+              먼저 &quot;연결&quot; 버튼을 클릭하여 WebSocket 서버에 연결합니다
+            </li>
+            <li>메시지를 입력하고 전송하여 서버와 통신합니다</li>
+            <li>방 입장/퇴장 기능을 통해 룸 기반 통신을 테스트합니다</li>
+            <li>수신 메시지 목록에서 서버로부터 받은 메시지를 확인합니다</li>
+          </ol>
+          {/* 환경 변수 설정 안내 */}
+          <div className="mt-4 rounded-md bg-blue-50 p-3">
+            <p className="text-xs text-blue-800">
+              <strong>참고:</strong> 환경 변수{" "}
+              <code className="rounded bg-blue-100 px-1">
+                NEXT_PUBLIC_SOCKET_URL
+              </code>
+              을 설정하여 WebSocket 서버 URL을 변경할 수 있습니다. (기본값:
+              http://localhost:3001)
+            </p>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }
