@@ -1,79 +1,77 @@
 "use client";
 
 import { useState } from "react";
-import { useSocketEvent, useSocketEmit } from "@/hooks/use-socket";
+import { useStompSubscription, useStompPublish } from "@/hooks/use-socket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import {
+  MessageData,
+  UserConnectedData,
+  UserDisconnectedData,
+  NotificationData,
+  STOMP_DESTINATIONS,
+} from "@/types/socket";
 
 /**
- * 메시지 타입 정의
- */
-interface Message {
-  content: string;
-  userId: string;
-  timestamp: number;
-}
-
-/**
- * 사용자 접속 이벤트 데이터 타입
- */
-interface UserConnectedData {
-  userId: string;
-  username: string;
-}
-
-/**
- * 사용자 연결 해제 이벤트 데이터 타입
- */
-interface UserDisconnectedData {
-  userId: string;
-}
-
-/**
- * 알림 이벤트 데이터 타입
- */
-interface NotificationData {
-  type: string;
-  message: string;
-}
-
-/**
- * WebSocket 기능을 시연하는 예제 컴포넌트
+ * STOMP WebSocket 기능을 시연하는 예제 컴포넌트
  *
  * 주요 기능:
- * - 메시지 송수신
+ * - 메시지 송수신 (STOMP 프로토콜)
  * - 방(Room) 입장/퇴장
  * - 실시간 알림 수신
  * - 사용자 접속/퇴장 이벤트 처리
+ *
+ * @example
+ * // 구독 (Subscribe)
+ * useStompSubscription<MessageData>(
+ *   STOMP_DESTINATIONS.SUBSCRIBE.MESSAGE,
+ *   (data) => console.log(data)
+ * );
+ *
+ * // 발행 (Publish)
+ * const { publish } = useStompPublish();
+ * publish(STOMP_DESTINATIONS.PUBLISH.SEND_MESSAGE, { content: "Hello!" });
  */
 export const SocketExample = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageData[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const { emit, isConnected } = useSocketEmit();
+  const { publish, isConnected } = useStompPublish();
 
   // 메시지 수신 이벤트 리스너
-  useSocketEvent<Message>("message", (data) => {
-    setMessages((prev) => [...prev, data]);
-    toast.success(`새 메시지: ${data.content}`);
-  });
+  useStompSubscription<MessageData>(
+    STOMP_DESTINATIONS.SUBSCRIBE.MESSAGE,
+    (data) => {
+      setMessages((prev) => [...prev, data]);
+      toast.success(`새 메시지: ${data.content}`);
+    }
+  );
 
   // 사용자 접속 이벤트 리스너
-  useSocketEvent<UserConnectedData>("userConnected", (data) => {
-    toast.info(`${data.username}님이 접속했습니다`);
-  });
+  useStompSubscription<UserConnectedData>(
+    STOMP_DESTINATIONS.SUBSCRIBE.USER_CONNECTED,
+    (data) => {
+      toast.info(`${data.username}님이 접속했습니다`);
+    }
+  );
 
   // 사용자 연결 해제 이벤트 리스너
-  useSocketEvent<UserDisconnectedData>("userDisconnected", (data) => {
-    toast.info(`사용자(${data.userId})가 퇴장했습니다`);
-  });
+  useStompSubscription<UserDisconnectedData>(
+    STOMP_DESTINATIONS.SUBSCRIBE.USER_DISCONNECTED,
+    (data) => {
+      toast.info(`사용자(${data.userId})가 퇴장했습니다`);
+    }
+  );
 
   // 알림 수신 이벤트 리스너
-  useSocketEvent<NotificationData>("notification", (data) => {
-    toast(data.message, {
-      description: `타입: ${data.type}`,
-    });
-  });
+  useStompSubscription<NotificationData>(
+    STOMP_DESTINATIONS.SUBSCRIBE.NOTIFICATION,
+    (data) => {
+      toast(data.message, {
+        description: `타입: ${data.type}`,
+      });
+    }
+  );
 
   /**
    * 메시지 전송 핸들러
@@ -85,7 +83,9 @@ export const SocketExample = () => {
       return;
     }
 
-    const success = emit("sendMessage", { content: inputValue });
+    const success = publish(STOMP_DESTINATIONS.PUBLISH.SEND_MESSAGE, {
+      content: inputValue,
+    });
 
     if (success) {
       setInputValue("");
@@ -100,7 +100,7 @@ export const SocketExample = () => {
    */
   const handleJoinRoom = () => {
     const roomId = "room-1";
-    emit("joinRoom", roomId);
+    publish(STOMP_DESTINATIONS.PUBLISH.JOIN_ROOM, { roomId });
     toast.success(`방 ${roomId}에 입장했습니다`);
   };
 
@@ -109,7 +109,7 @@ export const SocketExample = () => {
    */
   const handleLeaveRoom = () => {
     const roomId = "room-1";
-    emit("leaveRoom", roomId);
+    publish(STOMP_DESTINATIONS.PUBLISH.LEAVE_ROOM, { roomId });
     toast.info(`방 ${roomId}에서 퇴장했습니다`);
   };
 

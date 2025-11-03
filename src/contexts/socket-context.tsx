@@ -7,27 +7,27 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { socketService, TypedSocket } from "@/lib/socket";
+import { stompService, StompClient } from "@/lib/socket";
 import type { SocketStatus } from "@/types/socket";
 
 /**
  * Socket Context의 값 타입 정의
  */
 interface SocketContextValue {
-  /** Socket.IO 클라이언트 인스턴스 */
-  socket: TypedSocket | null;
-  /** 현재 소켓 연결 상태 */
+  /** STOMP 클라이언트 인스턴스 */
+  client: StompClient | null;
+  /** 현재 WebSocket 연결 상태 */
   status: SocketStatus;
-  /** 소켓 연결 함수 */
+  /** WebSocket 연결 함수 */
   connect: () => void;
-  /** 소켓 연결 해제 함수 */
+  /** WebSocket 연결 해제 함수 */
   disconnect: () => void;
   /** 연결 여부 (편의성을 위한 boolean 값) */
   isConnected: boolean;
 }
 
 /**
- * Socket Context - 전역 소켓 상태 관리를 위한 Context
+ * Socket Context - 전역 STOMP 상태 관리를 위한 Context
  */
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
 
@@ -41,10 +41,10 @@ interface SocketProviderProps {
 }
 
 /**
- * WebSocket 연결 상태를 전역으로 관리하는 Provider 컴포넌트
+ * STOMP WebSocket 연결 상태를 전역으로 관리하는 Provider 컴포넌트
  *
  * @param children - 자식 컴포넌트
- * @param autoConnect - true일 경우 마운트 시 자동으로 소켓 연결 (기본값: false)
+ * @param autoConnect - true일 경우 마운트 시 자동으로 WebSocket 연결 (기본값: false)
  *
  * @example
  * ```tsx
@@ -57,69 +57,61 @@ export const SocketProvider = ({
   children,
   autoConnect = false,
 }: SocketProviderProps) => {
-  const [socket, setSocket] = useState<TypedSocket | null>(null);
+  const [client, setClient] = useState<StompClient | null>(null);
   const [status, setStatus] = useState<SocketStatus>("disconnected");
 
   useEffect(() => {
-    // 소켓 서비스 초기화
-    const newSocket = socketService.initialize();
-    setSocket(newSocket);
+    // STOMP 클라이언트 초기화
+    const newClient = stompService.initialize();
+    setClient(newClient);
 
     // 연결 성공 핸들러
-    const handleConnect = () => {
+    stompService.onConnect(() => {
       setStatus("connected");
-    };
+    });
 
     // 연결 해제 핸들러
-    const handleDisconnect = () => {
+    stompService.onDisconnect(() => {
       setStatus("disconnected");
-    };
+    });
 
     // 연결 에러 핸들러
-    const handleConnectError = () => {
+    stompService.onError(() => {
       setStatus("error");
-    };
-
-    // 이벤트 리스너 등록
-    newSocket.on("connect", handleConnect);
-    newSocket.on("disconnect", handleDisconnect);
-    newSocket.on("connect_error", handleConnectError);
+    });
 
     // autoConnect가 true면 자동으로 연결
     if (autoConnect) {
       setStatus("connecting");
-      socketService.connect();
+      stompService.connect();
     }
 
-    // 클린업: 이벤트 리스너 제거 및 소켓 연결 해제
+    // 클린업: STOMP 연결 해제
     return () => {
-      newSocket.off("connect", handleConnect);
-      newSocket.off("disconnect", handleDisconnect);
-      newSocket.off("connect_error", handleConnectError);
-      socketService.disconnect();
+      stompService.disconnect();
     };
   }, [autoConnect]);
 
   /**
-   * 소켓 연결을 시작하는 함수
+   * STOMP 연결을 시작하는 함수
    */
   const connect = useCallback(() => {
     setStatus("connecting");
-    socketService.connect();
+    stompService.connect();
   }, []);
 
   /**
-   * 소켓 연결을 해제하는 함수
+   * STOMP 연결을 해제하는 함수
    */
   const disconnect = useCallback(() => {
-    socketService.disconnect();
+    stompService.disconnect();
   }, []);
 
   // 연결 상태를 boolean으로 변환
   const isConnected = status === "connected";
 
   const value: SocketContextValue = {
-    socket,
+    client,
     status,
     connect,
     disconnect,

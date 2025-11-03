@@ -2,12 +2,13 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { useSocketContext } from "@/contexts/socket-context";
-import type { Socket } from "socket.io-client";
+import { stompService } from "@/lib/socket";
+import type { IMessage, StompHeaders } from "@stomp/stompjs";
 
 /**
- * WebSocket 연결 및 상태 관리를 위한 Hook
+ * STOMP WebSocket 연결 및 상태 관리를 위한 Hook
  *
- * @returns 소켓 인스턴스, 상태, 연결/해제 메서드를 포함하는 객체
+ * @returns STOMP 클라이언트 인스턴스, 상태, 연결/해제 메서드를 포함하는 객체
  *
  * @example
  * ```tsx
@@ -15,11 +16,11 @@ import type { Socket } from "socket.io-client";
  * ```
  */
 export const useSocket = () => {
-  const { socket, status, connect, disconnect, isConnected } =
+  const { client, status, connect, disconnect, isConnected } =
     useSocketContext();
 
   return {
-    socket,
+    client,
     status,
     connect,
     disconnect,
@@ -28,24 +29,26 @@ export const useSocket = () => {
 };
 
 /**
- * 서버로부터 특정 이벤트를 수신하는 Hook
+ * STOMP destination 구독을 위한 Hook
  *
- * @template T - 이벤트 데이터의 타입
- * @param event - 수신할 이벤트 이름
- * @param handler - 이벤트 발생 시 실행될 핸들러 함수
+ * @template T - 메시지 데이터의 타입
+ * @param destination - 구독할 destination (예: "/topic/messages")
+ * @param handler - 메시지 수신 시 실행될 핸들러 함수
+ * @param headers - 추가 구독 헤더 (선택사항)
  *
  * @example
  * ```tsx
- * useSocketEvent<{ message: string }>("chat", (data) => {
- *   console.log(data.message);
+ * useStompSubscription<{ content: string }>("/topic/chat", (data) => {
+ *   console.log(data.content);
  * });
  * ```
  */
-export const useSocketEvent = <T = unknown>(
-  event: string,
-  handler: (data: T) => void
+export const useStompSubscription = <T = unknown>(
+  destination: string,
+  handler: (data: T) => void,
+  headers?: StompHeaders
 ) => {
-  const { socket, isConnected } = useSocketContext();
+  const { isConnected } = useSocketContext();
   const savedHandler = useRef(handler);
 
   // 최신 핸들러를 ref에 저장하여 의존성 문제 방지
@@ -54,68 +57,137 @@ export const useSocketEvent = <T = unknown>(
   }, [handler]);
 
   useEffect(() => {
-    if (!socket || !isConnected) return;
+    if (!isConnected) return;
 
-    // 타입 안전한 이벤트 핸들러 래퍼
-    const eventHandler = (data: T) => {
-      savedHandler.current(data);
+    // STOMP 메시지 핸들러 래퍼
+    const messageHandler = (message: IMessage) => {
+      try {
+        // 메시지 본문을 JSON으로 파싱 시도
+        const data = JSON.parse(message.body) as T;
+        savedHandler.current(data);
+      } catch {
+        // JSON 파싱 실패 시 원본 문자열 전달
+        savedHandler.current(message.body as T);
+      }
     };
 
-    // Socket.IO의 untyped 이벤트 시스템 사용
-    const untypedSocket = socket as unknown as Socket;
-    untypedSocket.on(event, eventHandler);
+    // destination 구독
+    const unsubscribe = stompService.subscribe(
+      destination,
+      messageHandler,
+      headers
+    );
 
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    // 컴포넌트 언마운트 시 구독 해제
     return () => {
-      untypedSocket.off(event, eventHandler);
+      unsubscribe();
     };
-  }, [socket, event, isConnected]);
+  }, [destination, isConnected, headers]);
 };
 
 /**
- * 서버로 이벤트를 전송하는 Hook
+ * STOMP 메시지 발행을 위한 Hook
  *
- * @returns emit 함수와 연결 상태를 포함하는 객체
+ * @returns publish 함수와 연결 상태를 포함하는 객체
+ *
+ * @example
+ * ```tsx
+ * const { publish } = useStompPublish();
+ *
+ * const sendMessage = () => {
+ *   publish("/app/sendMessage", { content: "Hello!" });
+ * };
+ * ```
+ */
+export const useStompPublish = () => {
+  const { isConnected } = useSocketContext();
+
+  /**
+   * STOMP 메시지를 발행하는 함수
+   *
+   * @template T - 전송할 데이터의 타입
+   * @param destination - 메시지를 보낼 destination (예: "/app/sendMessage")
+   * @param body - 메시지 본문
+   * @param headers - 추가 헤더 (선택사항)
+   * @returns 전송 성공 여부
+   */
+  const publish = useCallback(
+    <T = unknown>(
+      destination: string,
+      body: T,
+      headers?: StompHeaders
+    ): boolean => {
+      if (!isConnected) {
+        console.warn(
+          `[STOMP] Cannot publish to "${destination}": Not connected`
+        );
+        return false;
+      }
+
+      stompService.publish(destination, body, headers);
+      return true;
+    },
+    [isConnected]
+  );
+
+  return { publish, isConnected };
+};
+
+/**
+ * 레거시 Socket.IO 스타일의 emit을 위한 호환성 Hook
+ * (STOMP의 publish를 Socket.IO의 emit 스타일로 사용)
+ *
+ * @deprecated STOMP에서는 useStompPublish를 사용하는 것을 권장합니다
  *
  * @example
  * ```tsx
  * const { emit } = useSocketEmit();
- *
- * const sendMessage = () => {
- *   emit("sendMessage", { content: "Hello!" });
- * };
+ * emit("sendMessage", { content: "Hello!" }); // -> /app/sendMessage로 발행
  * ```
  */
 export const useSocketEmit = () => {
-  const { socket, isConnected } = useSocketContext();
+  const { isConnected } = useSocketContext();
 
-  /**
-   * 서버로 이벤트를 전송하는 함수
-   *
-   * @template T - 전송할 데이터의 타입
-   * @param event - 전송할 이벤트 이름
-   * @param data - 전송할 데이터 (선택사항)
-   * @returns 전송 성공 여부
-   */
   const emit = useCallback(
     <T = unknown>(event: string, data?: T): boolean => {
-      if (!socket || !isConnected) {
-        console.warn(`[Socket] Cannot emit "${event}": Socket not connected`);
+      if (!isConnected) {
+        console.warn(`[STOMP] Cannot emit "${event}": Not connected`);
         return false;
       }
 
-      const untypedSocket = socket as unknown as Socket;
-
-      if (data !== undefined) {
-        untypedSocket.emit(event, data);
-      } else {
-        untypedSocket.emit(event);
-      }
+      // Socket.IO 이벤트를 STOMP destination으로 변환
+      // 예: "sendMessage" -> "/app/sendMessage"
+      const destination = `/app/${event}`;
+      stompService.publish(destination, data || {});
 
       return true;
     },
-    [socket, isConnected]
+    [isConnected]
   );
 
   return { emit, isConnected };
+};
+
+/**
+ * 레거시 Socket.IO 스타일의 이벤트 수신을 위한 호환성 Hook
+ * (STOMP의 subscribe를 Socket.IO의 on 스타일로 사용)
+ *
+ * @deprecated STOMP에서는 useStompSubscription을 사용하는 것을 권장합니다
+ *
+ * @example
+ * ```tsx
+ * useSocketEvent<{ message: string }>("chat", (data) => {
+ *   console.log(data.message); // /topic/chat 구독
+ * });
+ * ```
+ */
+export const useSocketEvent = <T = unknown>(
+  event: string,
+  handler: (data: T) => void
+) => {
+  // Socket.IO 이벤트를 STOMP destination으로 변환
+  // 예: "chat" -> "/topic/chat"
+  const destination = `/topic/${event}`;
+
+  useStompSubscription(destination, handler);
 };
