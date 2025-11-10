@@ -1,4 +1,5 @@
 import { Client, IMessage, IFrame, StompHeaders } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 /**
  * STOMP 클라이언트 타입
@@ -19,13 +20,15 @@ interface Subscription {
   unsubscribe: () => void;
 }
 
-// 환경 변수에서 WebSocket 서버 URL 가져오기 (기본값: ws://localhost:3001/ws)
+// 환경 변수에서 WebSocket 서버 URL 가져오기 (기본값: http://localhost:3001/ws)
+// SockJS를 사용하므로 http:// 또는 https:// 프로토콜 사용
 const WEBSOCKET_URL =
-  process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:3001/ws";
+  process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:3001/ws";
 
 /**
- * WebSocket 연결을 관리하는 싱글톤 서비스 클래스 (STOMP 프로토콜 사용)
- * STOMP 클라이언트 초기화, 연결/해제, 구독/발행 로직을 담당
+ * WebSocket 연결을 관리하는 싱글톤 서비스 클래스 (STOMP over SockJS)
+ * SockJS를 통해 WebSocket 연결을 생성하고, STOMP 프로토콜로 메시지를 주고받습니다.
+ * STOMP 클라이언트 초기화, 연결/해제, 구독/발행 로직을 담당합니다.
  */
 class StompService {
   private client: Client | null = null;
@@ -48,7 +51,8 @@ class StompService {
     }
 
     this.client = new Client({
-      brokerURL: WEBSOCKET_URL,
+      // SockJS를 사용하여 WebSocket 연결 생성
+      webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       connectHeaders: {
         // 필요한 경우 인증 헤더 추가
         // login: 'user',
