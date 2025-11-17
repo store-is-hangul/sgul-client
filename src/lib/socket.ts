@@ -55,7 +55,6 @@ class StompService {
       webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       connectHeaders: {
         userId: "1234567890",
-        Connection: "upgrade",
       },
       debug: (str: string) => {
         if (process.env.NODE_ENV === "development") {

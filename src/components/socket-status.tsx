@@ -113,17 +113,7 @@ export const SocketStatus = () => {
         </Button>
 
         <Button
-          onClick={() =>
-            publish(
-              "/app/game/start",
-              {},
-              {
-                simpUserHeader: "1234567890",
-                userId: "1234567890",
-                Connection: "upgrade",
-              }
-            )
-          }
+          onClick={() => publish("/app/game/start")}
           variant="default"
           size="sm"
         >

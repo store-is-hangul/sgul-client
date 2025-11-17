@@ -115,7 +115,7 @@ export const useStompPublish = () => {
   const publish = useCallback(
     <T = unknown>(
       destination: string,
-      body: T,
+      body?: T,
       headers?: StompHeaders
     ): boolean => {
       if (!isConnected) {
