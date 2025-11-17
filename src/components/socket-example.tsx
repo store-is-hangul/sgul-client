@@ -1,17 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useStompSubscription, useStompPublish } from "@/hooks/use-socket";
+import {
+  useStompSubscription,
+  useStompPublish,
+  useSocket,
+} from "@/hooks/use-socket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
-  MessageData,
-  UserConnectedData,
-  UserDisconnectedData,
-  NotificationData,
-  STOMP_DESTINATIONS,
-} from "@/types/socket";
+import { MessageData, STOMP_DESTINATIONS } from "@/types/socket";
 
 /**
  * STOMP WebSocket 기능을 시연하는 예제 컴포넌트
@@ -34,44 +32,25 @@ import {
  * publish(STOMP_DESTINATIONS.PUBLISH.SEND_MESSAGE, { content: "Hello!" });
  */
 export const SocketExample = () => {
-  const [messages, setMessages] = useState<MessageData[]>([]);
+  const [messages] = useState<MessageData[]>([]);
   const [inputValue, setInputValue] = useState("");
   const { publish, isConnected } = useStompPublish();
 
-  // 메시지 수신 이벤트 리스너
-  useStompSubscription<MessageData>(
-    STOMP_DESTINATIONS.SUBSCRIBE.MESSAGE,
-    (data) => {
-      setMessages((prev) => [...prev, data]);
-      toast.success(`새 메시지: ${data.content}`);
-    }
-  );
+  // useStompSubscription<MessageData>(
+  //   STOMP_DESTINATIONS.SUBSCRIBE.MESSAGE,
+  //   (data) => {
+  //     setMessages((prev) => [...prev, data]);
+  //     toast.success(`새 메시지: ${data.content}`);
+  //   }
+  // );
 
-  // 사용자 접속 이벤트 리스너
-  useStompSubscription<UserConnectedData>(
-    STOMP_DESTINATIONS.SUBSCRIBE.USER_CONNECTED,
-    (data) => {
-      toast.info(`${data.username}님이 접속했습니다`);
-    }
-  );
+  useStompSubscription("/user/queue/game", (data) => {
+    console.log(data);
+  });
 
-  // 사용자 연결 해제 이벤트 리스너
-  useStompSubscription<UserDisconnectedData>(
-    STOMP_DESTINATIONS.SUBSCRIBE.USER_DISCONNECTED,
-    (data) => {
-      toast.info(`사용자(${data.userId})가 퇴장했습니다`);
-    }
-  );
-
-  // 알림 수신 이벤트 리스너
-  useStompSubscription<NotificationData>(
-    STOMP_DESTINATIONS.SUBSCRIBE.NOTIFICATION,
-    (data) => {
-      toast(data.message, {
-        description: `타입: ${data.type}`,
-      });
-    }
-  );
+  useStompSubscription("/queue/errors", (data) => {
+    console.log("Subscription Error:", data);
+  });
 
   /**
    * 메시지 전송 핸들러

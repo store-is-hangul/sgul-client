@@ -1,9 +1,10 @@
 "use client";
 
-import { useSocket } from "@/hooks/use-socket";
+import { useSocket, useStompPublish } from "@/hooks/use-socket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SocketStatus as SocketStatusType } from "@/types/socket";
+import { stompService } from "@/lib/socket";
 
 /**
  * 소켓 상태별 UI 설정
@@ -57,6 +58,23 @@ export const SocketStatus = () => {
     }
   };
 
+  const { publish } = useStompPublish();
+
+  /**
+   * 구독 상태 확인 핸들러
+   */
+  const handleCheckSubscriptions = () => {
+    const subscriptions = stompService.getSubscriptions();
+    console.log("=== 구독 상태 확인 ===");
+    console.log(`총 구독 수: ${subscriptions.length}`);
+    console.log("구독 목록:", subscriptions);
+    console.log(
+      "/user/queue/game 구독 여부:",
+      stompService.isSubscribed("/user/queue/game")
+    );
+    console.log("====================");
+  };
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between gap-4">
@@ -70,13 +88,15 @@ export const SocketStatus = () => {
           </div>
           {/* 상태 텍스트 */}
           <div>
-            <p className="text-sm font-medium">WebSocket 상태</p>
+            <p className="text-sm font-medium">
+              WebSocket 상태 {process.env.NEXT_PUBLIC_WEBSOCKET_URL}
+            </p>
             <p className={`text-xs ${statusConfig.color}`}>
               {statusConfig.label}
-              {/* 연결 시 소켓 ID 표시 */}
-              {socket?.id && isConnected && (
+              {/* 연결 시 추가 정보 표시 */}
+              {isConnected && socket && (
                 <span className="ml-2 text-gray-500">
-                  ID: {socket.id.slice(0, 8)}
+                  (STOMP {socket.connected ? "active" : "inactive"})
                 </span>
               )}
             </p>
@@ -90,6 +110,28 @@ export const SocketStatus = () => {
           disabled={status === "connecting"}
         >
           {isConnected ? "연결 해제" : "연결"}
+        </Button>
+
+        <Button
+          onClick={() =>
+            publish(
+              "/app/game/start",
+              {},
+              {
+                simpUserHeader: "1234567890",
+                userId: "1234567890",
+                Connection: "upgrade",
+              }
+            )
+          }
+          variant="default"
+          size="sm"
+        >
+          Game Start
+        </Button>
+
+        <Button onClick={handleCheckSubscriptions} variant="outline" size="sm">
+          구독 확인
         </Button>
       </div>
     </Card>

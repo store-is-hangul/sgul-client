@@ -21,6 +21,7 @@ export const useSocket = () => {
 
   return {
     client,
+    socket: client, // 별칭: Socket.IO 스타일 호환성
     status,
     connect,
     disconnect,
@@ -131,63 +132,4 @@ export const useStompPublish = () => {
   );
 
   return { publish, isConnected };
-};
-
-/**
- * 레거시 Socket.IO 스타일의 emit을 위한 호환성 Hook
- * (STOMP의 publish를 Socket.IO의 emit 스타일로 사용)
- *
- * @deprecated STOMP에서는 useStompPublish를 사용하는 것을 권장합니다
- *
- * @example
- * ```tsx
- * const { emit } = useSocketEmit();
- * emit("sendMessage", { content: "Hello!" }); // -> /app/sendMessage로 발행
- * ```
- */
-export const useSocketEmit = () => {
-  const { isConnected } = useSocketContext();
-
-  const emit = useCallback(
-    <T = unknown>(event: string, data?: T): boolean => {
-      if (!isConnected) {
-        console.warn(`[STOMP] Cannot emit "${event}": Not connected`);
-        return false;
-      }
-
-      // Socket.IO 이벤트를 STOMP destination으로 변환
-      // 예: "sendMessage" -> "/app/sendMessage"
-      const destination = `/app/${event}`;
-      stompService.publish(destination, data || {});
-
-      return true;
-    },
-    [isConnected]
-  );
-
-  return { emit, isConnected };
-};
-
-/**
- * 레거시 Socket.IO 스타일의 이벤트 수신을 위한 호환성 Hook
- * (STOMP의 subscribe를 Socket.IO의 on 스타일로 사용)
- *
- * @deprecated STOMP에서는 useStompSubscription을 사용하는 것을 권장합니다
- *
- * @example
- * ```tsx
- * useSocketEvent<{ message: string }>("chat", (data) => {
- *   console.log(data.message); // /topic/chat 구독
- * });
- * ```
- */
-export const useSocketEvent = <T = unknown>(
-  event: string,
-  handler: (data: T) => void
-) => {
-  // Socket.IO 이벤트를 STOMP destination으로 변환
-  // 예: "chat" -> "/topic/chat"
-  const destination = `/topic/${event}`;
-
-  useStompSubscription(destination, handler);
 };

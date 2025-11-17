@@ -54,13 +54,17 @@ class StompService {
       // SockJS를 사용하여 WebSocket 연결 생성
       webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       connectHeaders: {
-        // 필요한 경우 인증 헤더 추가
-        // login: 'user',
-        // passcode: 'password',
+        userId: "1234567890",
+        Connection: "upgrade",
       },
       debug: (str: string) => {
         if (process.env.NODE_ENV === "development") {
-          console.log("[STOMP Debug]", str);
+          // Heartbeat 메시지는 별도로 표시하여 중복 확인 용이
+          if (str.includes("PING") || str.includes("PONG")) {
+            console.log("[STOMP Heartbeat]", str, new Date().toISOString());
+          } else {
+            console.log("[STOMP Debug]", str);
+          }
         }
       },
       reconnectDelay: 3000, // 재연결 시도 간격 (ms)
@@ -286,6 +290,29 @@ class StompService {
    */
   onError(callback: (error: Error) => void): void {
     this.errorCallback = callback;
+  }
+
+  /**
+   * 현재 활성화된 구독 목록 조회
+   *
+   * @returns 구독 중인 destination 배열
+   */
+  getSubscriptions(): string[] {
+    return Array.from(this.subscriptions.values()).map(
+      (sub) => sub.destination
+    );
+  }
+
+  /**
+   * 특정 destination 구독 여부 확인
+   *
+   * @param destination - 확인할 destination
+   * @returns 구독 여부
+   */
+  isSubscribed(destination: string): boolean {
+    return Array.from(this.subscriptions.values()).some(
+      (sub) => sub.destination === destination
+    );
   }
 }
 
