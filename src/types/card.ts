@@ -1,10 +1,10 @@
-export type CardType = "consonant" | "vowel";
+export type CardType = "VOWEL" | "CONSONANT";
 
 export interface KoreanCard {
   id: string;
-  character: string;
-  type: CardType;
-  romanization: string; // 로마자 표기 (참고용)
+  cardType: CardType;
+  value: string; // "01", "02", "03", etc.
+  score: number; // 2, 3, 4
 }
 
 export interface GameState {
@@ -13,40 +13,47 @@ export interface GameState {
   selectedCard: KoreanCard | null;
 }
 
-// 한글 자음
-export const CONSONANTS: KoreanCard[] = [
-  { id: "ㄱ", character: "ㄱ", type: "consonant", romanization: "g/k" },
-  { id: "ㄴ", character: "ㄴ", type: "consonant", romanization: "n" },
-  { id: "ㄷ", character: "ㄷ", type: "consonant", romanization: "d/t" },
-  { id: "ㄹ", character: "ㄹ", type: "consonant", romanization: "r/l" },
-  { id: "ㅁ", character: "ㅁ", type: "consonant", romanization: "m" },
-  { id: "ㅂ", character: "ㅂ", type: "consonant", romanization: "b/p" },
-  { id: "ㅅ", character: "ㅅ", type: "consonant", romanization: "s" },
-  { id: "ㅇ", character: "ㅇ", type: "consonant", romanization: "ng" },
-  { id: "ㅈ", character: "ㅈ", type: "consonant", romanization: "j" },
-  { id: "ㅊ", character: "ㅊ", type: "consonant", romanization: "ch" },
-  { id: "ㅋ", character: "ㅋ", type: "consonant", romanization: "k" },
-  { id: "ㅌ", character: "ㅌ", type: "consonant", romanization: "t" },
-  { id: "ㅍ", character: "ㅍ", type: "consonant", romanization: "p" },
-  { id: "ㅎ", character: "ㅎ", type: "consonant", romanization: "h" },
-];
+// Helper function to generate card SVG path
+export const getCardImagePath = (card: KoreanCard): string => {
+  const type = card.cardType.toLowerCase();
+  return `/assets/cards/${type}_${card.value}_${card.score}.svg`;
+};
 
-// 한글 모음
-export const VOWELS: KoreanCard[] = [
-  { id: "ㅏ", character: "ㅏ", type: "vowel", romanization: "a" },
-  { id: "ㅑ", character: "ㅑ", type: "vowel", romanization: "ya" },
-  { id: "ㅓ", character: "ㅓ", type: "vowel", romanization: "eo" },
-  { id: "ㅕ", character: "ㅕ", type: "vowel", romanization: "yeo" },
-  { id: "ㅗ", character: "ㅗ", type: "vowel", romanization: "o" },
-  { id: "ㅛ", character: "ㅛ", type: "vowel", romanization: "yo" },
-  { id: "ㅜ", character: "ㅜ", type: "vowel", romanization: "u" },
-  { id: "ㅠ", character: "ㅠ", type: "vowel", romanization: "yu" },
-  { id: "ㅡ", character: "ㅡ", type: "vowel", romanization: "eu" },
-  { id: "ㅣ", character: "ㅣ", type: "vowel", romanization: "i" },
-];
+// Generate all cards based on available SVG files
+const generateAllCards = (): KoreanCard[] => {
+  const cards: KoreanCard[] = [];
 
-// 전체 카드 풀
-export const ALL_CARDS: KoreanCard[] = [...CONSONANTS, ...VOWELS];
+  // Consonants: 01-15, scores: 2,3,4
+  for (let i = 1; i <= 15; i++) {
+    const value = i.toString().padStart(2, "0");
+    for (const score of [2, 3, 4]) {
+      cards.push({
+        id: `consonant_${value}_${score}`,
+        cardType: "CONSONANT",
+        value,
+        score,
+      });
+    }
+  }
+
+  // Vowels: 01-10, scores: 2,3,4
+  for (let i = 1; i <= 10; i++) {
+    const value = i.toString().padStart(2, "0");
+    for (const score of [2, 3, 4]) {
+      cards.push({
+        id: `vowel_${value}_${score}`,
+        cardType: "VOWEL",
+        value,
+        score,
+      });
+    }
+  }
+
+  return cards;
+};
+
+// 전체 카드 풀 (총 75장: 자음 45장 + 모음 30장)
+export const ALL_CARDS: KoreanCard[] = generateAllCards();
 
 // 게임 유틸리티 함수들
 export const shuffleCards = (cards: KoreanCard[]): KoreanCard[] => {
