@@ -25,7 +25,7 @@ export const KoreanCardGame = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-200 p-8 flex flex-col">
+    <div className="min-h-screen p-8 flex flex-col">
       {/* 게임 제목 */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-800 mb-2">
