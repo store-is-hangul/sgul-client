@@ -140,7 +140,7 @@ class StompService {
   private resubscribeAll(): void {
     if (!this.client || !this.client.connected) return;
 
-    this.subscriptions.forEach((subscription) => {
+    this.subscriptions.forEach(subscription => {
       const stompSubscription = this.client!.subscribe(
         subscription.destination,
         subscription.callback
@@ -297,9 +297,7 @@ class StompService {
    * @returns 구독 중인 destination 배열
    */
   getSubscriptions(): string[] {
-    return Array.from(this.subscriptions.values()).map(
-      (sub) => sub.destination
-    );
+    return Array.from(this.subscriptions.values()).map(sub => sub.destination);
   }
 
   /**
@@ -310,7 +308,7 @@ class StompService {
    */
   isSubscribed(destination: string): boolean {
     return Array.from(this.subscriptions.values()).some(
-      (sub) => sub.destination === destination
+      sub => sub.destination === destination
     );
   }
 }

@@ -44,11 +44,11 @@ export const SocketExample = () => {
   //   }
   // );
 
-  useStompSubscription("/user/queue/game", (data) => {
+  useStompSubscription("/user/queue/game", data => {
     console.log(data);
   });
 
-  useStompSubscription("/queue/errors", (data) => {
+  useStompSubscription("/queue/errors", data => {
     console.log("Subscription Error:", data);
   });
 
@@ -112,7 +112,7 @@ export const SocketExample = () => {
           <input
             type="text"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={e => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="메시지를 입력하세요..."
             disabled={!isConnected}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { generate8DigitId } from "@/utils";

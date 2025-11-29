@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { SocketProvider } from "@/contexts/socket-context";
 import { Toaster } from "@/components/ui/sonner";
@@ -14,6 +15,13 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Galmuri11 폰트 설정
+const galmuri = localFont({
+  src: "../fonts/Galmuri11.ttf",
+  variable: "--font-galmuri",
+  display: "swap",
 });
 
 // 페이지 메타데이터
@@ -37,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${galmuri.variable} antialiased`}
       >
         {/* WebSocket Provider: autoConnect=false로 수동 연결 모드 */}
         <SocketProvider autoConnect={false}>

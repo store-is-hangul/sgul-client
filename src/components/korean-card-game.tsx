@@ -13,10 +13,10 @@ export const KoreanCardGame = () => {
 
   const handleCardClick = (card: KoreanCardType, cardIndex: number) => {
     // 손패에서 카드 제거
-    setHand((prev) => prev.filter((c) => c.id !== card.id));
+    setHand(prev => prev.filter(c => c.id !== card.id));
     // 중앙에 카드 추가 (카드 인덱스 정보도 함께 저장)
     const centerCard: CenterCard = { ...card, originalIndex: cardIndex };
-    setCenterCards((prev) => [...prev, centerCard]);
+    setCenterCards(prev => [...prev, centerCard]);
   };
 
   const handleResetGame = () => {

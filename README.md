@@ -69,7 +69,7 @@ import { STOMP_DESTINATIONS, MessageData } from "@/types/socket";
 function ChatComponent() {
   useStompSubscription<MessageData>(
     STOMP_DESTINATIONS.SUBSCRIBE.MESSAGE,
-    (data) => {
+    data => {
       console.log("Received message:", data.content);
     }
   );
@@ -105,7 +105,7 @@ function ChatComponent() {
   const { emit, isConnected } = useSocketEmit();
 
   // Subscribe
-  useSocketEvent<MessageData>("message", (data) => {
+  useSocketEvent<MessageData>("message", data => {
     console.log(data.content);
   });
 
