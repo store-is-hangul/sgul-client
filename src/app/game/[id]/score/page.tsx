@@ -80,8 +80,11 @@ const ScorePage = () => {
         <div className="font-galmuri font-bold text-[6.4rem] text-white stroke-[#262f35] uppercase">
           ENTER YOUR NAME
         </div>
-        <div className="font-galmuri font-bold text-[12rem] text-white stroke-[#262f35] h-[16rem] tracking-[3.2rem] uppercase">
-          {nickname}
+        <div className="font-galmuri font-bold text-[12rem] text-white stroke-[#262f35] h-[16rem] tracking-[3.2rem] uppercase flex">
+          <span>{nickname}</span>
+          {nickname.length < 10 && (
+            <span className="border-b-[0.8rem] border-white w-[9.6rem] animate-blink" />
+          )}
         </div>
         <div>
           <button

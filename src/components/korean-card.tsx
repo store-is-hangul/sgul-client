@@ -23,7 +23,7 @@ export const KoreanCard = ({
   return (
     <motion.div
       className={cn(
-        "relative w-20 h-28 rounded-lg shadow-lg cursor-pointer overflow-hidden",
+        "relative w-[15.6rem] h-[19.5rem] rounded-lg shadow-lg cursor-pointer overflow-hidden",
         "hover:shadow-xl transition-shadow duration-200",
         isInCenter && "cursor-default",
         className

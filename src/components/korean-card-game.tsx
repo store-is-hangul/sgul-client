@@ -45,7 +45,7 @@ export const KoreanCardGame = () => {
 
           {/* 중앙에 놓인 카드들 */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-wrap gap-2 items-center justify-center">
+            <div className="flex items-center justify-center">
               <AnimatePresence>
                 {centerCards.map((card, index) => {
                   // 카드가 원래 있던 위치 계산 (손패에서의 위치)
@@ -69,7 +69,7 @@ export const KoreanCardGame = () => {
                         opacity: 1,
                         x: (index - centerCards.length / 2) * 12, // 중앙에서 살짝 퍼지게
                         y: 0,
-                        rotate: (index - centerCards.length / 2) * 6, // 자연스러운 각도
+                        rotate: 0, // 회전 없이 평평하게
                         scale: 1,
                         transition: {
                           duration: 0.8, // 더 느리게
@@ -79,17 +79,15 @@ export const KoreanCardGame = () => {
                             stiffness: 200, // 더 부드럽게
                             damping: 30,
                           },
-                          rotate: {
-                            type: "spring",
-                            stiffness: 150,
-                            damping: 25,
-                          },
                         },
                       }}
                       exit={{
                         opacity: 0,
                         scale: 0,
                         transition: { duration: 0.4 },
+                      }}
+                      style={{
+                        filter: "drop-shadow(2px 4px 8px rgba(0, 0, 0, 0.8))",
                       }}
                     >
                       <KoreanCard card={card} isInCenter />
@@ -108,7 +106,7 @@ export const KoreanCardGame = () => {
           <h3 className="text-center text-lg font-semibold text-gray-700 mb-4">
             내 카드 ({hand.length}장)
           </h3>
-          <div className="flex gap-3 justify-center flex-wrap">
+          <div className="flex justify-center flex-wrap">
             <AnimatePresence>
               {hand.map((card, index) => (
                 <motion.div
@@ -121,7 +119,12 @@ export const KoreanCardGame = () => {
                     y: -100,
                     transition: { duration: 0.5 },
                   }}
-                  whileHover={{ y: -10 }}
+                  whileHover={{ y: -10, zIndex: 10 }}
+                  style={{
+                    marginLeft: index === 0 ? 0 : "-2rem",
+                    filter: "drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.6))",
+                  }}
+                  className="relative"
                 >
                   <KoreanCard
                     card={card}
