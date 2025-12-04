@@ -58,15 +58,28 @@ export const useStompSubscription = <T = unknown>(
   }, [handler]);
 
   useEffect(() => {
-    if (!isConnected) return;
+    if (!isConnected) {
+      console.log(`[Subscription] Waiting for connection: ${destination}`);
+      return;
+    }
+
+    console.log(`[Subscription] 📡 Subscribing to: ${destination}`);
 
     // STOMP 메시지 핸들러 래퍼
     const messageHandler = (message: IMessage) => {
+      console.log(
+        `[Subscription] 📨 Message received from ${destination}:`,
+        message
+      );
       try {
         // 메시지 본문을 JSON으로 파싱 시도
         const data = JSON.parse(message.body) as T;
         savedHandler.current(data);
-      } catch {
+      } catch (error) {
+        console.warn(
+          `[Subscription] Failed to parse JSON from ${destination}:`,
+          error
+        );
         // JSON 파싱 실패 시 원본 문자열 전달
         savedHandler.current(message.body as T);
       }
@@ -79,8 +92,11 @@ export const useStompSubscription = <T = unknown>(
       headers
     );
 
+    console.log(`[Subscription] ✅ Subscribed successfully to: ${destination}`);
+
     // 컴포넌트 언마운트 시 구독 해제
     return () => {
+      console.log(`[Subscription] 🔌 Unsubscribing from: ${destination}`);
       unsubscribe();
     };
   }, [destination, isConnected, headers]);
@@ -118,14 +134,21 @@ export const useStompPublish = () => {
       body?: T,
       headers?: StompHeaders
     ): boolean => {
+      console.log(`[Publish] Attempting to publish to "${destination}"`, {
+        isConnected,
+        body,
+        headers,
+      });
+
       if (!isConnected) {
         console.warn(
-          `[STOMP] Cannot publish to "${destination}": Not connected`
+          `[STOMP] ❌ Cannot publish to "${destination}": Not connected`
         );
         return false;
       }
 
       stompService.publish(destination, body, headers);
+      console.log(`[Publish] ✅ Published successfully to "${destination}"`);
       return true;
     },
     [isConnected]

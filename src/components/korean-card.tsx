@@ -35,7 +35,7 @@ export const KoreanCard = ({
     >
       <Image
         src={imagePath}
-        alt={`${card.cardType} ${card.value} (${card.score}점)`}
+        alt={`${card.cardType} ${card.value} (${card.point}점)`}
         fill
         className="object-contain"
         priority={!isInCenter}

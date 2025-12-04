@@ -43,9 +43,10 @@ class StompService {
    * STOMP 클라이언트를 초기화하고 반환
    * 이미 연결된 클라이언트가 있으면 기존 클라이언트 반환
    *
+   * @param userId - 연결 시 사용할 사용자 ID (선택사항)
    * @returns 초기화된 STOMP 클라이언트 인스턴스
    */
-  initialize(): Client {
+  initialize(userId?: string): Client {
     if (this.client && this.client.connected) {
       return this.client;
     }
@@ -54,7 +55,7 @@ class StompService {
       // SockJS를 사용하여 WebSocket 연결 생성
       webSocketFactory: () => new SockJS(WEBSOCKET_URL),
       connectHeaders: {
-        userId: "1234567890",
+        userId: userId || "1234567890",
       },
       debug: (str: string) => {
         if (process.env.NODE_ENV === "development") {
@@ -83,9 +84,15 @@ class StompService {
   private setupEventHandlers(): void {
     if (!this.client) return;
 
+    // 연결 시도 전
+    this.client.beforeConnect = () => {
+      console.log("[STOMP] Attempting to connect to:", WEBSOCKET_URL);
+      console.log("[STOMP] Connect headers:", this.client?.connectHeaders);
+    };
+
     // 연결 성공 시
     this.client.onConnect = (frame: IFrame) => {
-      console.log("[STOMP] Connected:", frame);
+      console.log("[STOMP] ✅ Connected successfully:", frame);
       this.reconnectAttempts = 0;
 
       // 이전에 등록된 구독들을 다시 활성화
@@ -106,10 +113,9 @@ class StompService {
 
     // STOMP 에러 시
     this.client.onStompError = (frame: IFrame) => {
-      console.error("[STOMP] Broker error:", frame.headers["message"]);
+      console.error("[STOMP] ❌ Broker error:", frame.headers["message"]);
       console.error("[STOMP] Details:", frame.body);
-
-      this.disconnect();
+      console.error("[STOMP] Full frame:", frame);
 
       const error = new Error(frame.headers["message"] || "STOMP error");
       if (this.errorCallback) {
@@ -119,18 +125,33 @@ class StompService {
 
     // WebSocket 에러 시
     this.client.onWebSocketError = (event: Event) => {
-      console.error("[STOMP] WebSocket error:", event);
+      console.error("[STOMP] ❌ WebSocket error:", event);
+      console.error("[STOMP] Reconnect attempt:", this.reconnectAttempts + 1);
       this.reconnectAttempts++;
 
       if (this.reconnectAttempts >= this.maxReconnectAttempts) {
         console.error("[STOMP] Max reconnection attempts reached");
-        this.disconnect();
       }
 
       const error = new Error("WebSocket connection error");
       if (this.errorCallback) {
         this.errorCallback(error);
       }
+    };
+
+    // WebSocket 연결 종료 시
+    this.client.onWebSocketClose = (event: CloseEvent) => {
+      console.warn("[STOMP] ⚠️ WebSocket closed:", {
+        code: event.code,
+        reason: event.reason,
+        wasClean: event.wasClean,
+      });
+    };
+
+    // 변경 감지 (디버깅용)
+    this.client.onChangeState = (state: number) => {
+      const stateNames = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
+      console.log("[STOMP] State changed to:", stateNames[state] || state);
     };
   }
 

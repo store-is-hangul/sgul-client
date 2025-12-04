@@ -4,7 +4,7 @@ export interface KoreanCard {
   id: string;
   cardType: CardType;
   value: string; // "01", "02", "03", etc.
-  score: number; // 2, 3, 4
+  point: number; // 2, 3, 4
 }
 
 export interface GameState {
@@ -13,38 +13,49 @@ export interface GameState {
   selectedCard: KoreanCard | null;
 }
 
+// 게임 시작 응답 타입
+export interface GameStartResponse {
+  userId: string;
+  sessionId: string;
+  desk: { cards: KoreanCard[] };
+  deckCardsCount: number;
+  hand: { cards: KoreanCard[] };
+  totalScore: number;
+  lastModifiedAt: string;
+}
+
 // Helper function to generate card SVG path
 export const getCardImagePath = (card: KoreanCard): string => {
   const type = card.cardType.toLowerCase();
-  return `/assets/cards/${type}_${card.value}_${card.score}.svg`;
+  return `/assets/cards/${type}_${card.value}_${card.point}.svg`;
 };
 
 // Generate all cards based on available SVG files
 const generateAllCards = (): KoreanCard[] => {
   const cards: KoreanCard[] = [];
 
-  // Consonants: 01-15, scores: 2,3,4
+  // Consonants: 01-15, points: 2,3,4
   for (let i = 1; i <= 15; i++) {
     const value = i.toString().padStart(2, "0");
-    for (const score of [2, 3, 4]) {
+    for (const point of [2, 3, 4]) {
       cards.push({
-        id: `consonant_${value}_${score}`,
+        id: `consonant_${value}_${point}`,
         cardType: "CONSONANT",
         value,
-        score,
+        point,
       });
     }
   }
 
-  // Vowels: 01-10, scores: 2,3,4
+  // Vowels: 01-10, points: 2,3,4
   for (let i = 1; i <= 10; i++) {
     const value = i.toString().padStart(2, "0");
-    for (const score of [2, 3, 4]) {
+    for (const point of [2, 3, 4]) {
       cards.push({
-        id: `vowel_${value}_${score}`,
+        id: `vowel_${value}_${point}`,
         cardType: "VOWEL",
         value,
-        score,
+        point,
       });
     }
   }

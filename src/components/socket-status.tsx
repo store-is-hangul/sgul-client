@@ -1,6 +1,6 @@
 "use client";
 
-import { useSocket, useStompPublish } from "@/hooks/use-socket";
+import { useSocket } from "@/hooks/use-socket";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { SocketStatus as SocketStatusType } from "@/types/socket";
@@ -45,6 +45,8 @@ const STATUS_CONFIG: Record<
 export const SocketStatus = () => {
   const { status, connect, disconnect, isConnected, socket } = useSocket();
 
+  console.log("status", status);
+
   const statusConfig = STATUS_CONFIG[status];
 
   /**
@@ -57,8 +59,6 @@ export const SocketStatus = () => {
       connect();
     }
   };
-
-  const { publish } = useStompPublish();
 
   /**
    * 구독 상태 확인 핸들러
@@ -112,17 +112,16 @@ export const SocketStatus = () => {
           {isConnected ? "연결 해제" : "연결"}
         </Button>
 
-        <Button
-          onClick={() => publish("/app/game/start")}
-          variant="default"
-          size="sm"
-        >
-          Game Start
-        </Button>
-
-        <Button onClick={handleCheckSubscriptions} variant="outline" size="sm">
-          구독 확인
-        </Button>
+        {/* 디버깅용 버튼 */}
+        {process.env.NODE_ENV === "development" && (
+          <Button
+            onClick={handleCheckSubscriptions}
+            variant="outline"
+            size="sm"
+          >
+            구독 확인
+          </Button>
+        )}
       </div>
     </Card>
   );
