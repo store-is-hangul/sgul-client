@@ -8,6 +8,7 @@ import {
   GameStartResponse,
   DeskRequest,
   DeskResponse,
+  DrawDeckResponse,
 } from "@/types/card";
 import {
   useSocket,
@@ -15,6 +16,7 @@ import {
   useStompPublish,
 } from "@/hooks/use-socket";
 import { SocketStatus } from "./socket-status";
+import Image from "next/image";
 
 interface KoreanCardGameProps {
   gameId: string;
@@ -31,7 +33,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
 
   // 게임 상태 업데이트 헬퍼 함수
-  const updateGameState = (data: DeskResponse) => {
+  const updateGameState = (data: DeskResponse | DrawDeckResponse) => {
     setHand(Array.isArray(data.hand?.cards) ? data.hand.cards : []);
     setDesk(Array.isArray(data.desk?.cards) ? data.desk.cards : []);
     setDeckCardsCount(data.deckCardsCount || 0);
@@ -73,6 +75,19 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
 
     updateGameState(data);
     console.log("[Desk] ✅ Desk state updated successfully");
+  });
+
+  // 덱 카드 드로우 응답 구독 (/user/queue/draw)
+  useStompSubscription<DrawDeckResponse>("/user/queue/draw", data => {
+    console.log("[RESPONSE] 덱 카드 드로우 응답:", data);
+
+    if (!data) {
+      console.error("[Draw] ❌ Received null/undefined data");
+      return;
+    }
+
+    updateGameState(data);
+    console.log("[Draw] ✅ Draw state updated successfully");
   });
 
   // 게임 시작 요청
@@ -125,6 +140,17 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     publish("/app/game/desk", request);
   };
 
+  const handleDrawDeck = () => {
+    if (!isConnected) {
+      console.error("[Deck] ❌ Not connected to server");
+      return;
+    }
+
+    publish("/app/game/draw", {
+      counts: 1,
+    });
+  };
+
   const handleResetGame = () => {
     // 게임 재시작 요청
     setIsGameStarted(false);
@@ -134,8 +160,15 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     }
   };
 
+  const getDeckLayers = (): number => {
+    if (deckCardsCount >= 73) return 4;
+    if (deckCardsCount >= 49) return 3;
+    if (deckCardsCount >= 25) return 2;
+    return 1;
+  };
+
   return (
-    <div className="min-h-screen p-8 flex flex-col">
+    <div className="relative min-h-screen p-8 flex flex-col">
       {/* 소켓 상태 표시 */}
       <div className="fixed top-4 right-4 z-50">
         <SocketStatus />
@@ -152,6 +185,10 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
           <p>남은 카드: {deckCardsCount}장</p>
           <p>총점: {totalScore}점</p>
         </div>
+      </div>
+
+      <div className="absolute left-8 top-8 font-galmuri font-bold text-[4rem] text-white stroke-[#262f35]">
+        SCORE : {totalScore}
       </div>
 
       {/* 중앙 영역 - 데스크 */}
@@ -258,6 +295,24 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
           className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg transition-colors duration-200"
         >
           게임 리셋
+        </button>
+      </div>
+      <div className="absolute right-12 bottom-[-4rem] flex flex-col items-end gap-[4rem]">
+        <button
+          className="bg-[url('/assets/btn_submit.webp')] bg-contain bg-center bg-no-repeat w-[18.2rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
+          aria-label="카드 제출"
+          tabIndex={0}
+        />
+        <button
+          onClick={handleDrawDeck}
+          className="relative w-[15.6rem] h-[19.5rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer"
+        >
+          <Image
+            src={`/assets/deck/deck_${getDeckLayers()}.svg`}
+            alt="deck"
+            fill
+            className="object-contain"
+          />
         </button>
       </div>
     </div>
