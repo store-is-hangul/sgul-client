@@ -42,9 +42,6 @@ const KOREAN_TO_ENGLISH_MAP: Record<string, string> = {
 
 const ScorePage = () => {
   const [nickname, setNickname] = useState("");
-  const handleNicknameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setNickname(e.target.value);
-  };
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
