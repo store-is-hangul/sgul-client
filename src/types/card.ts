@@ -23,3 +23,23 @@ export interface GameStartResponse {
   totalScore: number;
   lastModifiedAt: string;
 }
+
+// 데스크 액션 타입
+export type DeskActionType = "PUT" | "REMOVE";
+
+// 데스크 요청 타입
+export interface DeskRequest {
+  type: DeskActionType;
+  cardId: string;
+}
+
+// 데스크 응답 타입
+export interface DeskResponse {
+  userId: string;
+  sessionId: string;
+  desk: { cards: KoreanCard[] };
+  deckCardsCount: number;
+  hand: { cards: KoreanCard[] };
+  totalScore: number;
+  lastModifiedAt: string;
+}
