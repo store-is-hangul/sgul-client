@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { use } from "react";
 import { KoreanCardGame } from "@/components/korean-card-game";
 import { SocketProvider } from "@/contexts/socket-context";
-import { generate8DigitId } from "@/utils";
+import { useRouter } from "next/navigation";
 
 interface GamePageProps {
   params: Promise<{
@@ -12,20 +12,12 @@ interface GamePageProps {
 }
 
 export default function GamePage({ params }: GamePageProps) {
-  const { id: gameId } = use(params);
+  const { id: userId } = use(params);
+  const router = useRouter();
 
-  // userId 생성 (새로고침해도 유지되도록 sessionStorage 활용)
-  const userId = useMemo(() => {
-    if (typeof window !== "undefined") {
-      let storedUserId = sessionStorage.getItem("userId");
-      if (!storedUserId) {
-        storedUserId = generate8DigitId();
-        sessionStorage.setItem("userId", storedUserId);
-      }
-      return storedUserId;
-    }
-    return generate8DigitId();
-  }, []);
+  if (!userId) {
+    router.push("/");
+  }
 
   return (
     <SocketProvider autoConnect={true} userId={userId}>
@@ -43,7 +35,7 @@ export default function GamePage({ params }: GamePageProps) {
           aria-hidden="true"
         />
         <div className="relative z-10">
-          <KoreanCardGame gameId={gameId} />
+          <KoreanCardGame gameId={userId} />
         </div>
       </div>
     </SocketProvider>
