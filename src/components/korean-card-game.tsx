@@ -9,6 +9,7 @@ import {
   DeskRequest,
   DeskResponse,
   DrawDeckResponse,
+  PointResponse,
 } from "@/types/card";
 import {
   useSocket,
@@ -33,7 +34,9 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
 
   // 게임 상태 업데이트 헬퍼 함수
-  const updateGameState = (data: DeskResponse | DrawDeckResponse) => {
+  const updateGameState = (
+    data: DeskResponse | DrawDeckResponse | PointResponse
+  ) => {
     setHand(Array.isArray(data.hand?.cards) ? data.hand.cards : []);
     setDesk(Array.isArray(data.desk?.cards) ? data.desk.cards : []);
     setDeckCardsCount(data.deckCardsCount || 0);
@@ -88,6 +91,21 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
 
     updateGameState(data);
     console.log("[Draw] ✅ Draw state updated successfully");
+  });
+
+  useStompSubscription<PointResponse>("/user/queue/point", data => {
+    console.log("[RESPONSE] 점수 응답:", data);
+    if (!data) {
+      console.error("[Point] ❌ Received null/undefined data");
+      return;
+    }
+    if (data.success) {
+      setTotalScore(data.totalScore);
+      updateGameState(data);
+      console.log("[Point] ✅ Point state updated successfully");
+    } else {
+      console.error("[Point] ❌ Failed to submit card");
+    }
   });
 
   // 게임 시작 요청
@@ -149,6 +167,14 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     publish("/app/game/draw", {
       counts: 1,
     });
+  };
+
+  const handleSubmitCard = () => {
+    if (!isConnected) {
+      console.error("[Submit] ❌ Not connected to server");
+      return;
+    }
+    publish("/app/game/point", {});
   };
 
   const handleResetGame = () => {
@@ -302,6 +328,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
           className="bg-[url('/assets/btn_submit.webp')] bg-contain bg-center bg-no-repeat w-[18.2rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
           aria-label="카드 제출"
           tabIndex={0}
+          onClick={handleSubmitCard}
         />
         <button
           onClick={handleDrawDeck}

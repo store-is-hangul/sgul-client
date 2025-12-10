@@ -70,3 +70,18 @@ export interface DrawDeckResponse {
   totalScore: number;
   lastModifiedAt: string;
 }
+
+/**
+ * 점수 응답 타입
+ */
+export interface PointResponse {
+  userId: string;
+  sessionId: string;
+  totalScore: number;
+  lastModifiedAt: string;
+  success: boolean;
+  mathematicalExpression: string;
+  desk: { cards: KoreanCard[] };
+  hand: { cards: KoreanCard[] };
+  deckCardsCount: number;
+}

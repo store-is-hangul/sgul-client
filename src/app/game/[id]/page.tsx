@@ -16,10 +16,14 @@ export default function GamePage({ params }: GamePageProps) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!userId) router.replace("/");
+    if (!userId || userId.trim() === "") {
+      router.replace("/");
+    }
   }, [userId, router]);
 
-  if (!userId) return null;
+  if (!userId || userId.trim() === "") {
+    return null;
+  }
 
   return (
     <SocketProvider autoConnect={true} userId={userId}>
