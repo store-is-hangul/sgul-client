@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import { KoreanCardGame } from "@/components/korean-card-game";
 import { SocketProvider } from "@/contexts/socket-context";
 import { useRouter } from "next/navigation";
@@ -15,9 +15,11 @@ export default function GamePage({ params }: GamePageProps) {
   const { id: userId } = use(params);
   const router = useRouter();
 
-  if (!userId) {
-    router.push("/");
-  }
+  useEffect(() => {
+    if (!userId) router.replace("/");
+  }, [userId, router]);
+
+  if (!userId) return null;
 
   return (
     <SocketProvider autoConnect={true} userId={userId}>
