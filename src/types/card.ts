@@ -1,5 +1,8 @@
 export type CardType = "VOWEL" | "CONSONANT";
 
+/**
+ * 한글 카드 타입
+ */
 export interface KoreanCard {
   id: string;
   cardType: CardType;
@@ -7,13 +10,18 @@ export interface KoreanCard {
   point: number; // 2, 3, 4
 }
 
+/**
+ * 게임 상태 타잭
+ */
 export interface GameState {
   hand: KoreanCard[];
   centerCards: KoreanCard[];
   selectedCard: KoreanCard | null;
 }
 
-// 게임 시작 응답 타입
+/**
+ * 게임 시작 응답 타입
+ */
 export interface GameStartResponse {
   userId: string;
   sessionId: string;
@@ -24,59 +32,41 @@ export interface GameStartResponse {
   lastModifiedAt: string;
 }
 
-// Helper function to generate card SVG path
-export const getCardImagePath = (card: KoreanCard): string => {
-  const type = card.cardType.toLowerCase();
-  return `/assets/cards/${type}_${card.value}_${card.point}.svg`;
-};
+/**
+ * 데스크 액션 타입
+ */
+export type DeskActionType = "PUT" | "REMOVE";
 
-// Generate all cards based on available SVG files
-const generateAllCards = (): KoreanCard[] => {
-  const cards: KoreanCard[] = [];
+/**
+ * 데스크 요청 타입
+ */
+export interface DeskRequest {
+  type: DeskActionType;
+  cardId: string;
+}
 
-  // Consonants: 01-15, points: 2,3,4
-  for (let i = 1; i <= 15; i++) {
-    const value = i.toString().padStart(2, "0");
-    for (const point of [2, 3, 4]) {
-      cards.push({
-        id: `consonant_${value}_${point}`,
-        cardType: "CONSONANT",
-        value,
-        point,
-      });
-    }
-  }
+/**
+ * 데스크 응답 타입
+ */
+export interface DeskResponse {
+  userId: string;
+  sessionId: string;
+  desk: { cards: KoreanCard[] };
+  deckCardsCount: number;
+  hand: { cards: KoreanCard[] };
+  totalScore: number;
+  lastModifiedAt: string;
+}
 
-  // Vowels: 01-10, points: 2,3,4
-  for (let i = 1; i <= 10; i++) {
-    const value = i.toString().padStart(2, "0");
-    for (const point of [2, 3, 4]) {
-      cards.push({
-        id: `vowel_${value}_${point}`,
-        cardType: "VOWEL",
-        value,
-        point,
-      });
-    }
-  }
-
-  return cards;
-};
-
-// 전체 카드 풀 (총 75장: 자음 45장 + 모음 30장)
-export const ALL_CARDS: KoreanCard[] = generateAllCards();
-
-// 게임 유틸리티 함수들
-export const shuffleCards = (cards: KoreanCard[]): KoreanCard[] => {
-  const shuffled = [...cards];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
-
-export const getRandomHand = (count: number = 8): KoreanCard[] => {
-  const shuffled = shuffleCards(ALL_CARDS);
-  return shuffled.slice(0, count);
-};
+/**
+ * 덱 카드 드로우 응답 타입
+ */
+export interface DrawDeckResponse {
+  userId: string;
+  sessionId: string;
+  desk: { cards: KoreanCard[] };
+  deckCardsCount: number;
+  hand: { cards: KoreanCard[] };
+  totalScore: number;
+  lastModifiedAt: string;
+}

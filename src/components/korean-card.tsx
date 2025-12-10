@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { KoreanCard as KoreanCardType, getCardImagePath } from "@/types/card";
+import { KoreanCard as KoreanCardType } from "@/types/card";
+import { getCardImagePath } from "@/utils/card";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 
