@@ -199,20 +199,6 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       <div className="fixed top-4 right-4 z-50">
         <SocketStatus />
       </div>
-
-      {/* 게임 정보 */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">
-          한글 카드 게임
-        </h1>
-        <div className="flex justify-center gap-6 text-sm text-gray-600">
-          <p>게임 ID: {gameId}</p>
-          {sessionId && <p>세션 ID: {sessionId}</p>}
-          <p>남은 카드: {deckCardsCount}장</p>
-          <p>총점: {totalScore}점</p>
-        </div>
-      </div>
-
       <div className="absolute left-8 top-8 font-galmuri font-bold text-[4rem] text-white stroke-[#262f35]">
         SCORE : {totalScore}
       </div>
