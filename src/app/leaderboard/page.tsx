@@ -1,5 +1,7 @@
 "use client";
 
+import { useFetch } from "@/hooks/use-fetch";
+import { LeaderboardResponse } from "@/types/leaderboard";
 import { useRouter } from "next/navigation";
 
 const LeaderboardPage = () => {
@@ -9,10 +11,21 @@ const LeaderboardPage = () => {
     router.push(`/`);
   };
 
+  const { data, isLoading, error } = useFetch<LeaderboardResponse>(
+    "leaderboard/ranks?count=10"
+  );
+
   const rows = [
     { id: 1, rank: "1", name: "John Doe", score: 100 },
     { id: 2, rank: "2", name: "Jane Doe", score: 90 },
     { id: 3, rank: "3", name: "John Smith123123123", score: 80 },
+    { id: 4, rank: "4", name: "John Smith123123123", score: 80 },
+    { id: 5, rank: "5", name: "John Smith123123123", score: 80 },
+    { id: 6, rank: "6", name: "John Smith123123123", score: 80 },
+    { id: 7, rank: "7", name: "John Smith123123123", score: 80 },
+    { id: 8, rank: "8", name: "John Smith123123123", score: 80 },
+    { id: 9, rank: "9", name: "John Smith123123123", score: 80 },
+    { id: 10, rank: "10", name: "John Smith123123123", score: 80 },
   ];
 
   return (
@@ -34,10 +47,10 @@ const LeaderboardPage = () => {
           <p className="font-galmuri font-extrabold text-[6.4rem] text-white uppercase [text-shadow:-4px_4px_0_rgba(0,0,0,0.25)]">
             LEADER BOARD
           </p>
-          <ul className="w-[60rem]">
-            {rows.map(row => (
+          <ul className="w-[60rem] min-h-[60rem]">
+            {data?.ranks.map((row, index) => (
               <li
-                key={row.id}
+                key={row.userName + index}
                 className="grid grid-cols-[7ch_minmax(0,1fr)_12ch] items-center gap-x-8 py-2 font-bold font-galmuri text-[3.2rem] text-white [text-shadow:-4px_4px_0_rgba(0,0,0,0.25)]"
               >
                 {/* Rank: 왼쪽 시작점 고정 */}
@@ -47,7 +60,7 @@ const LeaderboardPage = () => {
 
                 {/* Name: 왼쪽 시작점 고정 + 길면 말줄임 */}
                 <span className="min-w-0 justify-self-start text-left truncate font-bold uppercase">
-                  {row.name}
+                  {row.userName}
                 </span>
 
                 {/* Score: 오른쪽 끝점 고정 (시작점도 결과적으로 동일하게 보임) */}
