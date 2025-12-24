@@ -8,7 +8,7 @@ export default function Home() {
   const router = useRouter();
 
   const handlePlayClick = () => {
-    router.push(`/game/${generate8DigitId()}`);
+    router.push(`/game?id=${generate8DigitId()}`);
   };
 
   const handleLeaderboardClick = () => {

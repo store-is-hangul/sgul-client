@@ -1,19 +1,14 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { KoreanCardGame } from "@/components/korean-card-game";
 import { SocketProvider } from "@/contexts/socket-context";
-import { useRouter } from "next/navigation";
 
-interface GamePageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default function GamePage({ params }: GamePageProps) {
-  const { id: userId } = use(params);
+function GameContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const userId = searchParams.get("id");
 
   useEffect(() => {
     if (!userId || userId.trim() === "") {
@@ -45,5 +40,13 @@ export default function GamePage({ params }: GamePageProps) {
         </div>
       </div>
     </SocketProvider>
+  );
+}
+
+export default function GamePage() {
+  return (
+    <Suspense fallback={null}>
+      <GameContent />
+    </Suspense>
   );
 }
