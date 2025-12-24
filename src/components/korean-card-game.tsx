@@ -18,6 +18,7 @@ import {
 } from "@/hooks/use-socket";
 import { SocketStatus } from "./socket-status";
 import Image from "next/image";
+import ErrorDialog from "@/components/dialog/error-dialog";
 
 interface KoreanCardGameProps {
   gameId: string;
@@ -32,6 +33,8 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   const [totalScore, setTotalScore] = useState<number>(0);
   const [sessionId, setSessionId] = useState<string>("");
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+  const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // 게임 상태 업데이트 헬퍼 함수
   const updateGameState = (
@@ -97,6 +100,8 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     console.log("[RESPONSE] 점수 응답:", data);
     if (!data) {
       console.error("[Point] ❌ Received null/undefined data");
+      setErrorMessage("데이터를 받지 못했습니다.");
+      setIsErrorOpen(true);
       return;
     }
     if (data.success) {
@@ -105,6 +110,8 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       console.log("[Point] ✅ Point state updated successfully");
     } else {
       console.error("[Point] ❌ Failed to submit card");
+      setErrorMessage("카드 제출에 실패했습니다.");
+      setIsErrorOpen(true);
     }
   });
 
@@ -328,6 +335,13 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
           />
         </button>
       </div>
+
+      {/* 에러 다이얼로그 */}
+      <ErrorDialog
+        isOpen={isErrorOpen}
+        onOpenChange={setIsErrorOpen}
+        message={errorMessage}
+      />
     </div>
   );
 };
