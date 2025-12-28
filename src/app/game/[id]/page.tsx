@@ -1,9 +1,7 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use } from "react";
 import { KoreanCardGame } from "@/components/korean-card-game";
-import { SocketProvider } from "@/contexts/socket-context";
-import { useRouter } from "next/navigation";
 
 interface GamePageProps {
   params: Promise<{
@@ -13,37 +11,24 @@ interface GamePageProps {
 
 export default function GamePage({ params }: GamePageProps) {
   const { id: userId } = use(params);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!userId || userId.trim() === "") {
-      router.replace("/");
-    }
-  }, [userId, router]);
-
-  if (!userId || userId.trim() === "") {
-    return null;
-  }
 
   return (
-    <SocketProvider autoConnect={true} userId={userId}>
-      <div className="relative min-h-screen">
-        <div
-          className="absolute inset-0 bg-[url('/assets/background.webp')] bg-cover bg-center pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-[url('/assets/background_filter_crt.webp')] bg-cover bg-center mix-blend-color opacity-20 pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-[url('/assets/background_filter_vig.webp')] bg-cover bg-center opacity-60 pointer-events-none"
-          aria-hidden="true"
-        />
-        <div className="relative z-10">
-          <KoreanCardGame gameId={userId} />
-        </div>
+    <div className="relative min-h-screen">
+      <div
+        className="absolute inset-0 bg-[url('/assets/background.webp')] bg-cover bg-center pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-[url('/assets/background_filter_crt.webp')] bg-cover bg-center mix-blend-color opacity-20 pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 bg-[url('/assets/background_filter_vig.webp')] bg-cover bg-center opacity-60 pointer-events-none"
+        aria-hidden="true"
+      />
+      <div className="relative z-10">
+        <KoreanCardGame gameId={userId} />
       </div>
-    </SocketProvider>
+    </div>
   );
 }
