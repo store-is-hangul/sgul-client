@@ -111,6 +111,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     } else {
       console.error("[Point] ❌ Failed to submit card");
       setErrorMessage("카드 제출에 실패했습니다.");
+      updateGameState(data);
       setIsErrorOpen(true);
     }
   });
