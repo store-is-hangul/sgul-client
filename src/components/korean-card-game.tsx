@@ -35,6 +35,8 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [isErrorOpen, setIsErrorOpen] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [mathematicalExpression, setMathematicalExpression] =
+    useState<string>("");
 
   // 게임 상태 업데이트 헬퍼 함수
   const updateGameState = (
@@ -107,6 +109,10 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     if (data.success) {
       setTotalScore(data.totalScore);
       updateGameState(data);
+      // 수식 표현 표시
+      if (data.mathematicalExpression) {
+        setMathematicalExpression(data.mathematicalExpression);
+      }
       console.log("[Point] ✅ Point state updated successfully");
     } else {
       console.error("[Point] ❌ Failed to submit card");
@@ -115,6 +121,17 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       setIsErrorOpen(true);
     }
   });
+
+  // 수식 표현 2초 후 사라지게
+  useEffect(() => {
+    if (mathematicalExpression) {
+      const timer = setTimeout(() => {
+        setMathematicalExpression("");
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [mathematicalExpression]);
 
   // 게임 시작 요청
   useEffect(() => {
@@ -214,12 +231,19 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       {/* 중앙 영역 - 데스크 */}
       <div className="flex-1 flex flex-col items-center justify-center mb-8">
         <div className="relative">
-          <div className="min-w-80 min-h-60 border-4 border-dashed border-gray-400 rounded-xl bg-white/50 flex items-center justify-center p-4">
-            {desk.length === 0 ? (
-              <p className="text-gray-500 text-lg font-medium">
-                카드를 여기에 내세요
-              </p>
-            ) : (
+          <div className="min-w-80 min-h-60 flex items-center justify-center p-4">
+            {mathematicalExpression ? (
+              <motion.p
+                key={mathematicalExpression}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                className="font-galmuri font-extrabold text-[8rem] text-white"
+              >
+                {mathematicalExpression}
+              </motion.p>
+            ) : desk.length === 0 ? null : (
               <div className="flex items-center justify-center">
                 <AnimatePresence>
                   {desk.map((card, index) => (
@@ -272,10 +296,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
 
       {/* 손패 (하단 카드들) */}
       <div className="flex justify-center">
-        <div className="bg-white/30 rounded-2xl p-6 shadow-lg">
-          <h3 className="text-center text-lg font-semibold text-gray-700 mb-4">
-            내 카드 ({Array.isArray(hand) ? hand.length : 0}장)
-          </h3>
+        <div className="p-6">
           <div className="flex justify-center flex-wrap">
             <AnimatePresence>
               {Array.isArray(hand) &&
@@ -306,16 +327,6 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
             </AnimatePresence>
           </div>
         </div>
-      </div>
-
-      {/* 리셋 버튼 */}
-      <div className="text-center mt-8">
-        <button
-          onClick={handleResetGame}
-          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg shadow-lg transition-colors duration-200"
-        >
-          게임 리셋
-        </button>
       </div>
       <div className="absolute right-12 bottom-[-4rem] flex flex-col items-end gap-[4rem]">
         <button
