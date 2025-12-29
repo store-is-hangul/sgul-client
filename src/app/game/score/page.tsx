@@ -1,6 +1,9 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { useStompPublish, useStompSubscription } from "@/hooks/use-socket";
+import { LeaderboardUser } from "@/types/leaderboard";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const KOREAN_TO_ENGLISH_MAP: Record<string, string> = {
   // 자음
@@ -42,6 +45,23 @@ const KOREAN_TO_ENGLISH_MAP: Record<string, string> = {
 
 const ScorePage = () => {
   const [nickname, setNickname] = useState("");
+  const router = useRouter();
+
+  const { publish } = useStompPublish();
+
+  const handleSubmitNickname = () => {
+    publish("/leaderboard/save", { userName: nickname, score: 100 });
+  };
+
+  useStompSubscription<LeaderboardUser>(
+    "/user/queue/leaderboard/save",
+    data => {
+      console.log("[RESPONSE] 닉네임 저장 응답:", data);
+      if (data) {
+        router.push("/leaderboard");
+      }
+    }
+  );
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -85,6 +105,7 @@ const ScorePage = () => {
         </div>
         <div>
           <button
+            onClick={handleSubmitNickname}
             className="bg-[url('/assets/btn_input.webp')] bg-contain bg-center bg-no-repeat w-[27rem] h-[11rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
             aria-label="점수 입력"
             tabIndex={0}
