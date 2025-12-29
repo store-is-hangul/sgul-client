@@ -50,7 +50,7 @@ const ScorePage = () => {
   const { publish } = useStompPublish();
 
   const handleSubmitNickname = () => {
-    publish("/leaderboard/save", { userName: nickname, score: 100 });
+    publish("/app/leaderboard/save", { userName: nickname });
   };
 
   useStompSubscription<LeaderboardUser>(
