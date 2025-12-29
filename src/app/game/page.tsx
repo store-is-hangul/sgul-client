@@ -3,21 +3,15 @@
 import { Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { KoreanCardGame } from "@/components/korean-card-game";
-import { SocketProvider } from "@/contexts/socket-context";
 
 function GameContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
+
+  const searchParams = useSearchParams();
   const userId = searchParams.get("id");
 
-  useEffect(() => {
-    if (!userId || userId.trim() === "") {
-      router.replace("/");
-    }
-  }, [userId, router]);
-
   if (!userId || userId.trim() === "") {
-    return null;
+    router.replace("/");
   }
 
   return (
@@ -35,7 +29,7 @@ function GameContent() {
         aria-hidden="true"
       />
       <div className="relative z-10">
-        <KoreanCardGame gameId={userId} />
+        {userId && <KoreanCardGame gameId={userId} />}
       </div>
     </div>
   );

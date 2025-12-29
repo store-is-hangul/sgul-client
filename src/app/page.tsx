@@ -21,7 +21,7 @@ export default function Home() {
         className="absolute inset-0 bg-[url('/assets/background_main.webp')] bg-cover bg-center pointer-events-none"
         aria-hidden="true"
       />
-      <div className="relative z-10 flex flex-col justify-between items-start pl-[15%] py-[8%] sm:py-[12%] md:py-[18%] h-full min-h-0">
+      <div className="relative z-10 flex flex-col justify-between items-start pl-[15%] py-[8%] sm:py-[3%] md:py-[9%] h-full min-h-0">
         <div className="flex-shrink-0">
           <Image
             src="/assets/main_logo.webp"
@@ -31,7 +31,7 @@ export default function Home() {
             className="w-auto h-auto max-w-[90vw] sm:max-w-[568px] max-h-[35vh] sm:max-h-[354px] object-contain"
           />
         </div>
-        <div className="flex flex-col gap-[2.4rem] w-full max-w-[27rem] pb-[8%] sm:pb-0 flex-shrink-0">
+        <div className="flex flex-col gap-[2.4rem] w-full max-w-[18rem] xl:max-w-[27rem] pb-[8%] sm:pb-0 flex-shrink-0">
           <button
             onClick={handlePlayClick}
             className="bg-[url('/assets/btn_play.webp')] bg-contain bg-center bg-no-repeat w-full max-w-[27rem] aspect-[27/11] transition-all duration-300 hover:opacity-80 hover:scale-110 active:scale-105 focus:outline-none cursor-pointer"
