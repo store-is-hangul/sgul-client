@@ -298,7 +298,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       </div>
 
       {/* 손패 (하단 카드들) */}
-      <div className="flex justify-center">
+      <div className="flex justify-center pr-48">
         <div className="p-6">
           <div className="flex justify-center flex-wrap">
             <AnimatePresence>
