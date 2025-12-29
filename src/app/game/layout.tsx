@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { SocketProvider } from "@/contexts/socket-context";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -8,9 +9,8 @@ interface GameLayoutProps {
   children: React.ReactNode;
 }
 
-export default function GameLayout({ children }: GameLayoutProps) {
+function GameLayoutContent({ children }: GameLayoutProps) {
   const router = useRouter();
-
   const searchParams = useSearchParams();
   const userId = searchParams.get("id");
 
@@ -28,5 +28,13 @@ export default function GameLayout({ children }: GameLayoutProps) {
     <SocketProvider autoConnect={true} userId={userId}>
       {children}
     </SocketProvider>
+  );
+}
+
+export default function GameLayout({ children }: GameLayoutProps) {
+  return (
+    <Suspense fallback={null}>
+      <GameLayoutContent>{children}</GameLayoutContent>
+    </Suspense>
   );
 }
