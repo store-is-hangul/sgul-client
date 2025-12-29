@@ -19,6 +19,7 @@ import {
 import { SocketStatus } from "./socket-status";
 import Image from "next/image";
 import ErrorDialog from "@/components/dialog/error-dialog";
+import { useRouter } from "next/navigation";
 
 interface KoreanCardGameProps {
   gameId: string;
@@ -27,6 +28,7 @@ interface KoreanCardGameProps {
 export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   const { isConnected } = useSocket();
   const { publish } = useStompPublish();
+  const router = useRouter();
   const [hand, setHand] = useState<KoreanCardType[]>([]);
   const [desk, setDesk] = useState<KoreanCardType[]>([]);
   const [deckCardsCount, setDeckCardsCount] = useState<number>(0);
@@ -133,7 +135,7 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     }
   }, [mathematicalExpression]);
 
-  // 게임 시작 요청
+  // 게임 시작 요청 (구독 설정 완료 후 실행되도록 딜레이 추가)
   useEffect(() => {
     console.log("[Game] useEffect triggered:", {
       isConnected,
@@ -142,10 +144,16 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     });
 
     if (isConnected && !isGameStarted) {
-      console.log("[Game] 🎮 Requesting game start...");
-      // 빈 본문 명시적으로 전달
-      const success = publish("/app/game/start", {});
-      console.log("[Game] Publish result:", success);
+      // React의 useEffect 실행 순서를 고려하여 subscription이 먼저 설정되도록
+      // 짧은 딜레이를 추가하여 타이밍 이슈 방지
+      // useStompSubscription의 useEffect가 먼저 실행되도록 보장
+      const timer = setTimeout(() => {
+        console.log("[Game] 🎮 Requesting game start...");
+        const success = publish("/app/game/start", {});
+        console.log("[Game] Publish result:", success);
+      }, 150); // 150ms 딜레이로 subscription 설정 시간 확보
+
+      return () => clearTimeout(timer);
     }
   }, [isConnected, isGameStarted, publish]);
 
@@ -202,13 +210,8 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
     publish("/app/game/point", {});
   };
 
-  const handleResetGame = () => {
-    // 게임 재시작 요청
-    setIsGameStarted(false);
-    if (isConnected) {
-      publish("/app/game/start", {});
-      console.log("[Game] Game restart requested");
-    }
+  const handleExitGame = () => {
+    router.push("game/score?id=" + gameId);
   };
 
   const getDeckLayers = (): number => {
@@ -330,11 +333,19 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
       </div>
       <div className="absolute right-12 bottom-[-4rem] flex flex-col items-end gap-[4rem]">
         <button
-          className="bg-[url('/assets/btn_submit.webp')] bg-contain bg-center bg-no-repeat w-[18.2rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
+          className="bg-[url('/assets/btn_submit.webp')] bg-contain bg-center bg-no-repeat w-[15.6rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
           aria-label="카드 제출"
           tabIndex={0}
           onClick={handleSubmitCard}
         />
+        {totalScore > 0 && (
+          <button
+            className="bg-[url('/assets/btn_exit.webp')] bg-contain bg-center bg-no-repeat w-[15.6rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
+            aria-label="게임 종료"
+            tabIndex={0}
+            onClick={handleExitGame}
+          />
+        )}
         <button
           onClick={handleDrawDeck}
           className="relative w-[15.6rem] h-[19.5rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer"
