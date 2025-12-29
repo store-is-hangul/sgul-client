@@ -68,6 +68,7 @@ export interface DrawDeckResponse {
   deckCardsCount: number;
   hand: { cards: KoreanCard[] };
   totalScore: number;
+  success: boolean;
   lastModifiedAt: string;
 }
 

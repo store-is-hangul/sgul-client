@@ -91,6 +91,13 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   useStompSubscription<DrawDeckResponse>("/user/queue/draw", data => {
     console.log("[RESPONSE] 덱 카드 드로우 응답:", data);
 
+    if (!data.success) {
+      console.error("[Draw] ❌ Failed to draw card");
+      setErrorMessage("덱 카드 드로우에 실패했습니다.");
+      setIsErrorOpen(true);
+      return;
+    }
+
     if (!data) {
       console.error("[Draw] ❌ Received null/undefined data");
       return;
