@@ -91,7 +91,14 @@ export const useFetch = <T = unknown>(
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const trimmedBase = baseUrl.endsWith("/")
+        ? baseUrl.slice(0, -1)
+        : baseUrl;
+      const trimmedPath = url.startsWith("/") ? url : `/${url}`;
+      const fullUrl = `${trimmedBase}${trimmedPath}`;
+
+      const response = await fetch(fullUrl, {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -212,18 +219,22 @@ export const useMutation = <T = unknown, V = unknown>(
       setError(null);
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}${url}`,
-          {
-            method,
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              ...headers,
-            },
-            body: JSON.stringify(variables),
-          }
-        );
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const trimmedBase = baseUrl.endsWith("/")
+          ? baseUrl.slice(0, -1)
+          : baseUrl;
+        const trimmedPath = url.startsWith("/") ? url : `/${url}`;
+        const fullUrl = `${trimmedBase}${trimmedPath}`;
+
+        const response = await fetch(fullUrl, {
+          method,
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...headers,
+          },
+          body: JSON.stringify(variables),
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

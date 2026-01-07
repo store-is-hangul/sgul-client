@@ -218,7 +218,11 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   };
 
   const handleExitGame = () => {
-    router.push("game/score?id=" + gameId);
+    if (totalScore === 0) {
+      router.push("/");
+    } else {
+      router.push("game/score?id=" + gameId);
+    }
   };
 
   const getDeckLayers = (): number => {
@@ -231,9 +235,9 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
   return (
     <div className="relative min-h-screen p-8 flex flex-col">
       {/* 소켓 상태 표시 */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* <div className="fixed top-4 right-4 z-50">
         <SocketStatus />
-      </div>
+      </div> */}
       <div className="absolute left-8 top-8 font-galmuri font-bold text-[4rem] text-white stroke-[#262f35]">
         SCORE : {totalScore}
       </div>
@@ -345,14 +349,12 @@ export const KoreanCardGame = ({ gameId }: KoreanCardGameProps) => {
           tabIndex={0}
           onClick={handleSubmitCard}
         />
-        {totalScore > 0 && (
-          <button
-            className="bg-[url('/assets/btn_exit.webp')] bg-contain bg-center bg-no-repeat w-[15.6rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
-            aria-label="게임 종료"
-            tabIndex={0}
-            onClick={handleExitGame}
-          />
-        )}
+        <button
+          className="bg-[url('/assets/btn_exit.webp')] bg-contain bg-center bg-no-repeat w-[15.6rem] h-[7.8rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer active:scale-105 focus:outline-none"
+          aria-label="게임 종료"
+          tabIndex={0}
+          onClick={handleExitGame}
+        />
         <button
           onClick={handleDrawDeck}
           className="relative w-[15.6rem] h-[19.5rem] transition-all duration-300 hover:opacity-80 hover:scale-110 cursor-pointer"
